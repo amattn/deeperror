@@ -1,3 +1,6 @@
+// Copyright (c) 2012-2013 Matt Nunogawa @amattn
+// This source code is release under the MIT License, http://opensource.org/licenses/MIT
+
 package deeperror
 
 import (
