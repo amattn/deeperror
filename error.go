@@ -2,6 +2,7 @@ package deeperror
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"runtime"
 	"strings"
