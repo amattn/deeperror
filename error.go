@@ -71,6 +71,11 @@ func NewHTTPError(num int64, endUserMsg string, err error, statusCode int) *Deep
 	return grunwayErrorPtr
 }
 
+func NewTODOError(num int64) *DeepError {
+	grunwayErrorPtr := New(num, "TODO", nil)
+	return grunwayErrorPtr
+}
+
 func prependToLines(para, prefix string) string {
 	lines := strings.Split(para, "\n")
 	for i, line := range lines {
