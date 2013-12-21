@@ -17,6 +17,10 @@ func init() {
 	gERROR_LOGGING_ENABLED = false
 }
 
+const (
+	gDEFAULT_STATUS_CODE = http.StatusInternalServerError
+)
+
 type DeepError struct {
 	Num           int64
 	Filename      string
@@ -34,7 +38,7 @@ func New(num int64, endUserMsg string, parentErr error) *DeepError {
 	e.Num = num
 	e.EndUserMsg = endUserMsg
 	e.Err = parentErr
-	e.StatusCode = http.StatusInternalServerError // default status code...
+	e.StatusCode = gDEFAULT_STATUS_CODE
 
 	gerr, ok := parentErr.(*DeepError)
 	if ok {
@@ -68,6 +72,9 @@ func New(num int64, endUserMsg string, parentErr error) *DeepError {
 func NewHTTPError(num int64, endUserMsg string, err error, statusCode int) *DeepError {
 	grunwayErrorPtr := New(num, endUserMsg, err)
 	grunwayErrorPtr.StatusCode = statusCode
+	if len(endUserMsg) == 0 {
+		grunwayErrorPtr.EndUserMsg = http.StatusText(statusCode)
+	}
 	return grunwayErrorPtr
 }
 
@@ -82,6 +89,14 @@ func prependToLines(para, prefix string) string {
 		lines[i] = prefix + line
 	}
 	return strings.Join(lines, "\n")
+}
+
+func (e *DeepError) StatusCodeIsDefaultValue() bool {
+	if e.StatusCode == gDEFAULT_STATUS_CODE {
+		return true
+	} else {
+		return false
+	}
 }
 
 func (e *DeepError) Error() string {
