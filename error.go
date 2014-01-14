@@ -33,6 +33,11 @@ type DeepError struct {
 	StackTrace    string
 }
 
+func Fatal(num int64, endUserMsg string, parentErr error) {
+	derr := New(num, endUserMsg, parentErr)
+	log.Fatal(derr)
+}
+
 func New(num int64, endUserMsg string, parentErr error) *DeepError {
 	e := new(DeepError)
 	e.Num = num
