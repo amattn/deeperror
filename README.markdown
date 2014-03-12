@@ -1,7 +1,7 @@
 deeperror
 =========
 
-Verbose, but very informative, enlightening and pleasantly formatted errors for Go
+Verbose, but informative, time-saving and pleasantly formatted errors for Go
 
 Installation
 ------------
@@ -61,8 +61,9 @@ Sample Output
 But Why?
 --------
 
+Because debugging can be time-consuming. 
 
-Because debugging is hard.  I wanted to make debuggin easier.  These are the tricks I use:
+I wanted to make debugging faster and easier.  These are the tricks I use:
 
 1. Error Numbers
 2. End User Error Messages
@@ -80,7 +81,7 @@ I use this shell command to generate them:
 	#!/bin/sh
 	od -vAn -N4 -tu4 < /dev/urandom | tr -d " \n"
 
-I use Keyboard Maestro to run the command and paste in where my cursor is.  You could probably use any sufficently smart macro tool.
+I use Keyboard Maestro to run the command and paste in where my cursor is.  You could probably use any sufficently smart macro tool or your editor's snippet functionality.
 
 ### End User Error Messages
 
@@ -92,8 +93,10 @@ Because debugging is hard, it's nice to get some extra hints now and then.  I st
 
 ### Stack Traces
 
-By themselves, sometimes useful.  combined with the next point, they become even more powerful than you could ever imagine.
+By themselves, stack traces are sometimes useful, sometimes a verbose mess of garbage.  Combined with the next point, they become even more powerful than you could ever imagine.
 
 ### Error Chaining
 
-Go usually doesn't do exceptions.  The normal pattern is to "pass the error up" the call stack.  By chaining the errors, we can pinpoint the error source faster and usualy get a successful repro sooner.  
+Go usually doesn't do exceptions.  The normal pattern is to "pass the error up" the call stack.  By chaining the errors, we can pinpoint the error source faster and usualy get a successful repro sooner.
+
+In our trivial example above, it's fairly easy to pinpoint where the `Atoi` bug occured.  In the case of the Atoi happens, due to a poorly formatted JSON document, processed by a http handler.  In the case of simply logging errors, `strconv.ParseInt: parsing "not a number!": invalid syntax` is less useful than "walking up the error chain".  In terms of handling the error, having a detailed error chain allows you the option of returning more specific error messages or having documentation for specific error numbers.
