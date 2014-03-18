@@ -28,6 +28,7 @@ type DeepError struct {
 	Line          int
 	EndUserMsg    string
 	DebugMsg      string
+	DebugFields   map[string]interface{}
 	Err           error // inner or source error
 	StatusCode    int
 	StackTrace    string
@@ -44,6 +45,7 @@ func New(num int64, endUserMsg string, parentErr error) *DeepError {
 	e.EndUserMsg = endUserMsg
 	e.Err = parentErr
 	e.StatusCode = gDEFAULT_STATUS_CODE
+	e.DebugFields = make(map[string]interface{})
 
 	gerr, ok := parentErr.(*DeepError)
 	if ok {
@@ -88,6 +90,10 @@ func NewTODOError(num int64) *DeepError {
 	return grunwayErrorPtr
 }
 
+func (derr *DeepError) AddDebugField(key string, value interface{}) {
+	derr.DebugFields[key] = value
+}
+
 func prependToLines(para, prefix string) string {
 	lines := strings.Split(para, "\n")
 	for i, line := range lines {
@@ -114,6 +120,17 @@ func (e *DeepError) Error() string {
 		parentError = prependToLines(e.Err.Error(), "-- ")
 	}
 
+	debugFieldStrings := make([]string, 0, len(e.DebugFields))
+	for k, v := range e.DebugFields {
+		str := fmt.Sprintf("\n-- DebugField[%s]: %+v", k, v)
+		debugFieldStrings = append(debugFieldStrings, str)
+	}
+
+	dbgMsg := ""
+	if len(e.DebugMsg) > 0 {
+		dbgMsg = "\n-- DebugMsg: " + e.DebugMsg
+	}
+
 	return fmt.Sprintln(
 		"\n\n-- DeepError",
 		e.Num,
@@ -122,7 +139,8 @@ func (e *DeepError) Error() string {
 		e.CallingMethod,
 		"line:", e.Line,
 		"\n-- EndUserMsg: ", e.EndUserMsg,
-		"\n-- DebugMsg: ", e.DebugMsg,
+		dbgMsg,
+		strings.Join(debugFieldStrings, ""),
 		"\n-- StackTrace:",
 		strings.TrimLeft(prependToLines(e.StackTrace, "-- "), " "),
 		"\n-- ParentError:", parentError,
