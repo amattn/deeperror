@@ -100,3 +100,9 @@ By themselves, stack traces are sometimes useful, sometimes a verbose mess of ga
 Go usually doesn't do exceptions.  The normal pattern is to "pass the error up" the call stack.  By chaining the errors, we can pinpoint the error source faster and usualy get a successful repro sooner.
 
 In our trivial example above, it's fairly easy to pinpoint where the `Atoi` bug occured.  In the case of the Atoi happens, due to a poorly formatted JSON document, processed by a http handler.  In the case of simply logging errors, `strconv.ParseInt: parsing "not a number!": invalid syntax` is less useful than "walking up the error chain".  In terms of handling the error, having a detailed error chain allows you the option of returning more specific error messages or having documentation for specific error numbers.
+
+### A note on performance
+
+Getting a stack trace is relatively slow.  If you are generating a deeperror on some hot path, it might not be the right tool.  I tend to use deeperror very, very liberally, but only when errors actually happen, not as a general ok case.  That being said, a wise man once said: 
+
+> You know how many times I have been glad that I didn't log an error?  Yeah, exactly.  Log everything, separate wheat/chaff at analysis time. - https://twitter.com/patio11/status/332525647413006337
