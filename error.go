@@ -90,7 +90,7 @@ func NewTODOError(num int64) *DeepError {
 }
 
 // Convenince method.  This will return nil if parrentErr == nil.  Otherwise it will create a DeepError and return that.
-func NewOrNilFromParent(num int64, endUserMsg string, parentErr error) *DeepError {
+func NewOrNilFromParent(num int64, endUserMsg string, parentErr error) error {
 	if parentErr == nil {
 		return nil
 	}
