@@ -21,6 +21,7 @@ const (
 	gDEFAULT_STATUS_CODE = http.StatusInternalServerError
 )
 
+//
 type DeepError struct {
 	Num           int64
 	Filename      string
@@ -34,11 +35,7 @@ type DeepError struct {
 	StackTrace    string
 }
 
-func Fatal(num int64, endUserMsg string, parentErr error) {
-	derr := New(num, endUserMsg, parentErr)
-	log.Fatal(derr)
-}
-
+// Primary Constructor.  Create a DeepError ptr with the given number, end user message and optional parent error.
 func New(num int64, endUserMsg string, parentErr error) *DeepError {
 	e := new(DeepError)
 	e.Num = num
@@ -76,24 +73,42 @@ func New(num int64, endUserMsg string, parentErr error) *DeepError {
 	return e
 }
 
+// HTTP variant.  Create a DeepError with the given http status code
 func NewHTTPError(num int64, endUserMsg string, err error, statusCode int) *DeepError {
-	grunwayErrorPtr := New(num, endUserMsg, err)
-	grunwayErrorPtr.StatusCode = statusCode
+	derr := New(num, endUserMsg, err)
+	derr.StatusCode = statusCode
 	if len(endUserMsg) == 0 {
-		grunwayErrorPtr.EndUserMsg = http.StatusText(statusCode)
+		derr.EndUserMsg = http.StatusText(statusCode)
 	}
-	return grunwayErrorPtr
+	return derr
 }
 
+// Convenince method.  creates a simple DeepError with the given error number.  The error message is set to "TODO"
 func NewTODOError(num int64) *DeepError {
-	grunwayErrorPtr := New(num, "TODO", nil)
-	return grunwayErrorPtr
+	derr := New(num, "TODO", nil)
+	return derr
 }
 
+// Convenince method.  This will return nil if parrentErr == nil.  Otherwise it will create a DeepError and return that.
+func NewOrNilFromParent(num int64, endUserMsg string, parentErr error) *DeepError {
+	if parentErr == nil {
+		return nil
+	}
+	return New(num, endUserMsg, parentErr)
+}
+
+// Convenince method.  Equivalient to derr:=New(...); log.Fatal(derr)
+func Fatal(num int64, endUserMsg string, parentErr error) {
+	derr := New(num, endUserMsg, parentErr)
+	log.Fatal(derr)
+}
+
+// Add arbitrary debugging data to a given DeepError
 func (derr *DeepError) AddDebugField(key string, value interface{}) {
 	derr.DebugFields[key] = value
 }
 
+// internal usage for formatting/pretty printing
 func prependToLines(para, prefix string) string {
 	lines := strings.Split(para, "\n")
 	for i, line := range lines {
@@ -102,6 +117,7 @@ func prependToLines(para, prefix string) string {
 	return strings.Join(lines, "\n")
 }
 
+//
 func (e *DeepError) StatusCodeIsDefaultValue() bool {
 	if e.StatusCode == gDEFAULT_STATUS_CODE {
 		return true
@@ -110,6 +126,8 @@ func (e *DeepError) StatusCodeIsDefaultValue() bool {
 	}
 }
 
+// Conform to the go built-in error interface
+// http://golang.org/pkg/builtin/#error
 func (e *DeepError) Error() string {
 
 	parentError := "nil"
@@ -147,13 +165,15 @@ func (e *DeepError) Error() string {
 	)
 }
 
+// enable/disable automatic logging of deeperrors upon creation
 func ErrorLoggingEnabled() bool {
 	return gERROR_LOGGING_ENABLED
 }
 
+// anything performed in this anonymous function will not trigger automatic logging of deeperrors upon creation
 type NoErrorsLoggingAction func()
 
-// you can use this method to temporarily disable
+// you can use this method to temporarily disable automatic logging of deeperrors
 func ExecWithoutErrorLogging(action NoErrorsLoggingAction) {
 	// this is racy...  I feel ashamed.
 	original := gERROR_LOGGING_ENABLED
