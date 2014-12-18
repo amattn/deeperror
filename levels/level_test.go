@@ -5,7 +5,7 @@ import "testing"
 func TestSomething(t *testing.T) {
 	expecteds := []ErrorLevelString{
 		UNKNOWN,
-		UNDEFINED,
+		UNDEF,
 		OFF,
 		FATAL,
 		ERROR,
