@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -83,13 +84,18 @@ func NewHTTPError(num int64, endUserMsg string, err error, statusCode int) *Deep
 	return derr
 }
 
-// Convenince method.  creates a simple DeepError with the given error number.  The error message is set to "TODO"
-func NewTODOError(num int64) *DeepError {
+// Convenience method.  creates a simple DeepError with the given error number.  The error message is set to "TODO"
+func NewTODOError(num int64, printArgs ...interface{}) *DeepError {
 	derr := New(num, "TODO", nil)
+
+	for i, printArg := range printArgs {
+		derr.AddDebugField(strconv.Itoa(i), printArg)
+	}
+
 	return derr
 }
 
-// Convenince method.  This will return nil if parrentErr == nil.  Otherwise it will create a DeepError and return that.
+// Convenience method.  This will return nil if parrentErr == nil.  Otherwise it will create a DeepError and return that.
 func NewOrNilFromParent(num int64, endUserMsg string, parentErr error) error {
 	if parentErr == nil {
 		return nil
@@ -97,7 +103,7 @@ func NewOrNilFromParent(num int64, endUserMsg string, parentErr error) error {
 	return New(num, endUserMsg, parentErr)
 }
 
-// Convenince method.  Equivalient to derr:=New(...); log.Fatal(derr)
+// Convenience method.  Equivalient to derr:=New(...); log.Fatal(derr)
 func Fatal(num int64, endUserMsg string, parentErr error) {
 	derr := New(num, endUserMsg, parentErr)
 	log.Fatal(derr)

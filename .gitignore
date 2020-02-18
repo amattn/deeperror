@@ -2,6 +2,9 @@
 # originally generated from github's default Go .gitignore
 #
 
+# various IDE droppings
+.idea
+
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 *.o
 *.a
