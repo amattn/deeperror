@@ -1,13 +1,13 @@
 package deeperror
 
 const (
-	internal_BUILD_NUMBER   = 36
-	internal_VERSION_STRING = "1.1.2"
+	internalBuildNumber   = 3
+	internalVersionString = "1.2.0"
 )
 
 func BuildNumber() int64 {
-	return internal_BUILD_NUMBER
+	return internalBuildNumber
 }
 func Version() string {
-	return internal_VERSION_STRING
+	return internalVersionString
 }

@@ -12,14 +12,14 @@ import (
 	"strings"
 )
 
-var gERROR_LOGGING_ENABLED bool
+var globalErrorLoggingEnabled bool
 
 func init() {
-	gERROR_LOGGING_ENABLED = false
+	globalErrorLoggingEnabled = false
 }
 
 const (
-	gDEFAULT_STATUS_CODE = http.StatusInternalServerError
+	globalDefaultStatusCode = http.StatusInternalServerError
 )
 
 //
@@ -42,7 +42,7 @@ func New(num int64, endUserMsg string, parentErr error) *DeepError {
 	e.Num = num
 	e.EndUserMsg = endUserMsg
 	e.Err = parentErr
-	e.StatusCode = gDEFAULT_STATUS_CODE
+	e.StatusCode = globalDefaultStatusCode
 	e.DebugFields = make(map[string]interface{})
 
 	gerr, ok := parentErr.(*DeepError)
@@ -68,7 +68,7 @@ func New(num int64, endUserMsg string, parentErr error) *DeepError {
 
 	e.StackTrace = string(buf[:n])
 
-	if gERROR_LOGGING_ENABLED {
+	if globalErrorLoggingEnabled {
 		log.Print(e)
 	}
 	return e
@@ -124,8 +124,8 @@ func prependToLines(para, prefix string) string {
 }
 
 //
-func (e *DeepError) StatusCodeIsDefaultValue() bool {
-	if e.StatusCode == gDEFAULT_STATUS_CODE {
+func (derr *DeepError) StatusCodeIsDefaultValue() bool {
+	if derr.StatusCode == globalDefaultStatusCode {
 		return true
 	} else {
 		return false
@@ -134,46 +134,46 @@ func (e *DeepError) StatusCodeIsDefaultValue() bool {
 
 // Conform to the go built-in error interface
 // http://golang.org/pkg/builtin/#error
-func (e *DeepError) Error() string {
+func (derr *DeepError) Error() string {
 
 	parentError := "nil"
 
 	// fmt.Println("THISERR", e.Num, "PARENT ERR", e.Err)
 
-	if e.Err != nil {
-		parentError = prependToLines(e.Err.Error(), "-- ")
+	if derr.Err != nil {
+		parentError = prependToLines(derr.Err.Error(), "-- ")
 	}
 
-	debugFieldStrings := make([]string, 0, len(e.DebugFields))
-	for k, v := range e.DebugFields {
+	debugFieldStrings := make([]string, 0, len(derr.DebugFields))
+	for k, v := range derr.DebugFields {
 		str := fmt.Sprintf("\n-- DebugField[%s]: %+v", k, v)
 		debugFieldStrings = append(debugFieldStrings, str)
 	}
 
 	dbgMsg := ""
-	if len(e.DebugMsg) > 0 {
-		dbgMsg = "\n-- DebugMsg: " + e.DebugMsg
+	if len(derr.DebugMsg) > 0 {
+		dbgMsg = "\n-- DebugMsg: " + derr.DebugMsg
 	}
 
 	return fmt.Sprintln(
 		"\n\n-- DeepError",
-		e.Num,
-		e.StatusCode,
-		e.Filename,
-		e.CallingMethod,
-		"line:", e.Line,
-		"\n-- EndUserMsg: ", e.EndUserMsg,
+		derr.Num,
+		derr.StatusCode,
+		derr.Filename,
+		derr.CallingMethod,
+		"line:", derr.Line,
+		"\n-- EndUserMsg: ", derr.EndUserMsg,
 		dbgMsg,
 		strings.Join(debugFieldStrings, ""),
 		"\n-- StackTrace:",
-		strings.TrimLeft(prependToLines(e.StackTrace, "-- "), " "),
+		strings.TrimLeft(prependToLines(derr.StackTrace, "-- "), " "),
 		"\n-- ParentError:", parentError,
 	)
 }
 
 // enable/disable automatic logging of deeperrors upon creation
 func ErrorLoggingEnabled() bool {
-	return gERROR_LOGGING_ENABLED
+	return globalErrorLoggingEnabled
 }
 
 // anything performed in this anonymous function will not trigger automatic logging of deeperrors upon creation
@@ -182,8 +182,8 @@ type NoErrorsLoggingAction func()
 // you can use this method to temporarily disable automatic logging of deeperrors
 func ExecWithoutErrorLogging(action NoErrorsLoggingAction) {
 	// this is racy...  I feel ashamed.
-	original := gERROR_LOGGING_ENABLED
-	gERROR_LOGGING_ENABLED = false
+	original := globalErrorLoggingEnabled
+	globalErrorLoggingEnabled = false
 	action()
-	gERROR_LOGGING_ENABLED = original
+	globalErrorLoggingEnabled = original
 }
