@@ -114,6 +114,17 @@ func (derr *DeepError) AddDebugField(key string, value interface{}) {
 	derr.DebugFields[key] = value
 }
 
+// cConform to the new Unwrap interface.
+// Unwrap() will expose errors further down the error chain
+// This should allow support for Is() and As() in Go 1.13 and later
+// Alternatively, earlier version of Go can
+// import "golang.org/x/xerrors" to get library support
+// for Is(), As(), and Unwrap()
+// see https://blog.golang.org/go1.13-errors for details
+func (derr *DeepError) Unwrap() error {
+	return derr.Err
+}
+
 // internal usage for formatting/pretty printing
 func prependToLines(para, prefix string) string {
 	lines := strings.Split(para, "\n")
@@ -123,7 +134,7 @@ func prependToLines(para, prefix string) string {
 	return strings.Join(lines, "\n")
 }
 
-//
+// Check if the current status code matches the global default
 func (derr *DeepError) StatusCodeIsDefaultValue() bool {
 	if derr.StatusCode == globalDefaultStatusCode {
 		return true
@@ -137,8 +148,6 @@ func (derr *DeepError) StatusCodeIsDefaultValue() bool {
 func (derr *DeepError) Error() string {
 
 	parentError := "nil"
-
-	// fmt.Println("THISERR", e.Num, "PARENT ERR", e.Err)
 
 	if derr.Err != nil {
 		parentError = prependToLines(derr.Err.Error(), "-- ")
