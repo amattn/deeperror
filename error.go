@@ -38,6 +38,14 @@ type DeepError struct {
 
 // Primary Constructor.  Create a DeepError ptr with the given number, end user message and optional parent error.
 func New(num int64, endUserMsg string, parentErr error) *DeepError {
+	const skipStackFrames = 2
+	return NewS(num, endUserMsg, parentErr, skipStackFrames)
+}
+
+// Wrapper version.  Create a DeepError with the starting stack frame higher in the stack with
+// ptr with the given number, end user message and optional parent error. A value of 1 for skipStackFrames
+// would yield the callers frame
+func NewS(num int64, endUserMsg string, parentErr error, skipStackFrames int) *DeepError {
 	e := new(DeepError)
 	e.Num = num
 	e.EndUserMsg = endUserMsg
@@ -52,7 +60,7 @@ func New(num int64, endUserMsg string, parentErr error) *DeepError {
 		}
 	}
 
-	pc, file, line, ok := runtime.Caller(1)
+	pc, file, line, ok := runtime.Caller(skipStackFrames)
 
 	if ok {
 		e.Line = line
